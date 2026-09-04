@@ -32,10 +32,36 @@ these tiers through that host-specific control at launch. If no such control is
 available, retain the tier as a briefing and review requirement and do not claim
 that a particular model or reasoning level was selected.
 
+Two hosts document such a control today: a Claude Code subagent definition
+carries a `model` field, and Codex subagent configuration selects a model per
+subagent. Where one exists, map `mechanical` to the cheapest model that can hold
+the leaf's contract and `judgment` to the strongest one available, and record
+the mapping in `PLAN.md` so a later reader can tell which leaf was produced
+cheaply. Routing changes who writes the artifact; it never changes the gates,
+the parent re-verification, or the integration standard that artifact must pass.
+A mechanical leaf whose gates start failing is a planning error to correct in
+`PLAN.md`, not a reason to lower the gate.
+
 Driver and branch duties are not leaf tiers. Contract and architecture work,
 dispatch decisions, parent re-verification, branch integration, and the final
 claim audit remain judgment responsibilities even when every execution leaf is
 mechanical.
+
+## Keep a run's cost proportional to the work
+
+A wide fan-out over frontier models is the expensive path, and the spend is
+invisible while it accumulates:
+
+- Cap wave width at what the plan and the driver can actually verify on return,
+  not at the number of `READY` leaves.
+- Keep the driver's context to the plan, the ledgers, and the current wave. Leaf
+  transcripts belong in the leaves.
+- Start a new scope in a fresh context instead of carrying a finished build's
+  history into the next one.
+- Route mechanical leaves down where the host allows it. The driver's planning,
+  verification, and audit duties are the part worth paying full price for.
+- Remember that spend is not evidence. A long, expensive run with unmet gates is
+  an unfinished run, and a cheap run with met gates is finished.
 
 ## Avoid false economy
 

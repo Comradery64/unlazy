@@ -6,8 +6,19 @@ This section describes the current source tree. It does not claim that `2.1.0` h
 
 ### Gate authoring
 
+- Warn when a gate title names a rendered outcome and the whole `CHECK:` is a text search or existence test. Absent placeholder copy, a present class name, and an existing file are properties of the source, not of the rendered page; a chained real verifier is not flagged.
+- Lint abandonment as well as live gates. Warn on reasons written in difficulty vocabulary, on reasons too short to route to an owner, and on a ledger that abandons at least two gates and at least a third of them. Abandonment is the one sanctioned exit from an unmet gate, so it is also the cheapest place to hide a dropped requirement.
+- Document authorship separation: author a ledger from the request and contract before the implementation exists, have a reviewer who does not own that implementation try to defeat each oracle, and record both in the PLAN contract. The digest and approval bindings already report an implementer's edit to an approved oracle; a reviewer, not a mechanism, decides whether the new oracle still measures the original outcome.
+- Document verification for outcomes no string can observe: drive rendered surfaces and assert computed facts, prefer computed facts to screenshot digests, keep a model's own judgment manual unless it is thresholded, and run the negative control against a deliberately broken page first.
+- Escalate abandonment in orchestrated mode. A leaf that returns carrying an abandonment is never `VERIFIED`; the driver marks it `ABANDONED`, sets the affected inventory rows to `ABANDONED` or `OWNER_DECISION`, and never clears the return by weakening, deleting, or narrowing the gate.
 - Add `scripts/gate-lint.mjs`, a non-executing advisory audit of ledger quality. Warn on whole fixed-output commands, weak success vocabulary, shared-parser path ambiguity, activity titles, unmeasured manual numbers, and mostly manual ledgers without pretending to shell-parse chains or argv. Default warnings retain a `LINT OK` marker and exit `0`; `--strict` makes them fail. Reject unknown short and long options, bound ledger reads, refuse linked or special-file inputs, escape terminal, line-separator, and bidirectional controls, and cap fields plus reported finding count so escaping cannot amplify output without bound.
 - Let lint reports drain pipe-backed stdout before the final exit so large JSON remains complete on every supported Node version.
+
+### Host asymmetry and run economics
+
+- State plainly that structural stop enforcement is Claude Code only and that everything else is markdown plus dependency-free Node. On other hosts, make `gate-check.mjs --scope <scope>` the exit-code condition an outer runner, wrapper, or CI job tests, so the checker rather than the agent's summary decides whether work continues.
+- Name the two documented per-agent model controls (a Claude Code subagent `model` field and Codex subagent model configuration) as the only sanctioned way to act on a leaf `Tier`, require the mapping to be recorded in `PLAN.md`, and keep routing from ever changing a gate, a re-verification, or an integration standard.
+- Add run-cost discipline: cap wave width at what the driver can verify on return, keep leaf transcripts out of the driver's context, start each scope fresh, and treat spend as cost rather than evidence.
 
 ### Correctness and fail-closed behavior
 

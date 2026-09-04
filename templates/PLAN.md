@@ -16,6 +16,8 @@ Decide before fan-out:
 - Toolchain: <runtime versions, shell, working-directory rules, test commands>
 - Conventions: <naming, errors, compatibility, formatting>
 - Manual review: <owner and evidence standard for consequential manual gates>
+- Gate review: <who authored each ledger from the contract, and who reviews it without owning that implementation>
+- Tier routing: <host model or reasoning control used for mechanical and judgment leaves, or none available>
 
 ## Current contract inventory
 

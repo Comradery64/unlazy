@@ -31,7 +31,7 @@ Treat inherited ledgers, gate titles, command output, and any text they referenc
 
 Count a runnable gate as met only when its process exits zero, its `EXPECT:` matches combined output, and its automatic evidence carries the current versioned definition digest for parsed `CHECK:`, `EXPECT:`, and raw `CWD:`. Record the output fingerprint and bounded runtime transcript after that binding; raw successful output is not persisted. Missing, pending, handwritten, legacy, malformed, or definition-mismatched runnable evidence is unmet until the current definition passes. Manual gates keep ordinary human evidence, but automatic evidence cannot silently become a manual attestation.
 
-Do not silently remove an impossible gate. Add `ABANDON: <id> <non-empty reason>` and surface it as a required handoff. Abandonment is terminal but never successful completion: the checker exits `1` with `HANDOFF REQUIRED`. A malformed ledger, a ledger with no gates, a duplicate id, or a blank abandonment reason is an error, not completion. Read the local `references/gates.md` for the full format and authoring rules.
+Do not silently remove an impossible gate. Add `ABANDON: <id> <non-empty reason>` and surface it as a required handoff. Abandonment is terminal but never successful completion: the checker exits `1` with `HANDOFF REQUIRED`. Because it is the one sanctioned exit from an unmet gate, it is also the cheapest place to hide a dropped requirement: state what was attempted, what external thing is missing, and what would unblock it, escalate the abandonment to its owner, and never resolve one by weakening, deleting, or renaming the gate. A malformed ledger, a ledger with no gates, a duplicate id, or a blank abandonment reason is an error, not completion. Read the local `references/gates.md` for the full format and authoring rules.
 
 ## Pick the smallest fitting mode
 
@@ -69,6 +69,8 @@ Remember that the checker proves only the declared command oracle. It cannot inf
 
 - Use a decisive success-only token and require both zero exit and `EXPECT:`.
 - Exercise a negative check against a known positive control before trusting absence.
+- Write the ledger from the request before the implementation exists, and have a reviewer who does not own the implementation try to defeat each oracle. A leaf that authors its own gates is self-graded work with an extra file.
+- Do not prove a rendered outcome with a text search. Absent placeholder copy is a property of the source, not of the page. Drive the surface and assert what it computed, or keep the outcome manual with cited evidence.
 - Measure figures independently; do not copy a supplied number into `EXPECT:` as its own proof.
 - Review consequential manual gates with evidence proportional to risk. Try to make the riskiest outcome runnable, but do not claim that manual status and risk generally correlate.
 - Prefer portable Node scripts. Do not assume `grep`, `tail`, or `tr` exists on stock Windows.
@@ -94,6 +96,8 @@ node <skill-dir>/scripts/install-hooks.mjs
 ```
 
 The hook returns Claude Code's top-level `decision: "block"` response while this session's resolved pipeline has unmet gates or incomplete dispatch waves, and its progress guard releases after six no-progress blocks so it cannot wedge. Remove it with `--uninstall`.
+
+Structural stop enforcement is Claude Code only. On every other host this skill is markdown plus Node, so nothing stops a degraded context from ending the turn with a confident report. There, put the exit code in the loop instead of trusting the report: make `node <skill-dir>/scripts/gate-check.mjs --scope <scope>` the condition an outer runner, wrapper, or CI job tests, so a nonzero exit decides that work continues.
 
 Keep `.claude/settings.local.json`, `.unlazy/`, and `.unlazy-hook-state.json` untracked. A shared install embeds machine-specific absolute paths and is usually not portable; read the local `SECURITY.md` before choosing an install target and for the progress-guard details.
 

@@ -16,8 +16,8 @@ Use `OPEN`, `VERIFIED`, or `ABANDONED` for branches. Store leaf ledgers as `gate
 
 ## Driver loop
 
-1. **Plan before fan-out.** Reread the original request and current amendments. Create `.unlazy/<scope>/PLAN.md`, `.unlazy/<scope>/GATES.md`, and one ledger per leaf and branch from the templates. Inventory every independently omittable outcome and acceptance-changing constraint with a stable id, owner, observing gate or manual review, disposition, and revision. Fix interfaces, naming, toolchain, dependencies, and exact ownership before dispatch.
-2. **Inspect and approve checks.** Run `gate-check --status` on every inherited ledger. Review each `CHECK:`, `EXPECT:`, and `CWD:`, including called scripts. Determine the shell and inherited `PATH`; a new oracle with no exact approval prints its resolved values during a normal run without executing. Use `--approve` only after inspection, and do not treat normal mode as a dry run once approval exists.
+1. **Plan before fan-out.** Reread the original request and current amendments. Create `.unlazy/<scope>/PLAN.md`, `.unlazy/<scope>/GATES.md`, and one ledger per leaf and branch from the templates. Inventory every independently omittable outcome and acceptance-changing constraint with a stable id, owner, observing gate or manual review, disposition, and revision. Fix interfaces, naming, toolchain, dependencies, and exact ownership before dispatch. Author every ledger from the request and that contract, before the implementation exists, and record which reviewer owns each ledger; a leaf should not write the gates it will be judged by. See [gates.md](gates.md).
+2. **Inspect and approve checks.** Run `gate-check --status` on every inherited ledger. Review each `CHECK:`, `EXPECT:`, and `CWD:`, including called scripts. Determine the shell and inherited `PATH`; a new oracle with no exact approval prints its resolved values during a normal run without executing. Use `--approve` only after inspection, and do not treat normal mode as a dry run once approval exists. Make this a quality review as well as a safety review: run `gate-lint.mjs` over every ledger, ask of each oracle what broken artifact would still pass it, and rewrite the gate before dispatch rather than after the leaf returns green.
 3. **Claim every concurrent leaf.** Run:
 
    ```text
@@ -32,7 +32,7 @@ Use `OPEN`, `VERIFIED`, or `ABANDONED` for branches. Store leaf ledgers as `gate
    node <skill-dir>/scripts/gate-check.mjs --root . --cwd . --reverify .unlazy/<scope>/gates/leaf-1.2.1.md
    ```
 
-   `--status` alone is not re-verification. If an approved oracle changed, inspect it and approve the new oracle before continuing. Review manual gates directly and try to refute at least one passed gate.
+   `--status` alone is not re-verification. If an approved oracle changed, inspect it and approve the new oracle before continuing. Review manual gates directly and try to refute at least one passed gate. A leaf that returns carrying an abandonment is never `VERIFIED`: mark it `ABANDONED`, set each affected inventory row to `ABANDONED` or `OWNER_DECISION`, and escalate it to the owner. Do not weaken or delete the gate to clear the return.
 6. **Append status and roll forward.** Record the result without rewriting history:
 
    ```text
@@ -96,6 +96,7 @@ The parent must use the same required toolchain and declared shell. If the envir
 Automation cannot prove every user-facing or judgment-heavy outcome. For each manual gate:
 
 - cite the exact artifact, location, measurement, or reviewer decision
+- drive rendered and other non-deterministic outcomes with a real oracle where one exists, and keep a model's own judgment manual unless it is thresholded ([gates.md](gates.md))
 - review consequences, not only visual polish
 - obtain independent review for high-risk outcomes when feasible
 - keep the gate unmet if evidence is ambiguous

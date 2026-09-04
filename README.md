@@ -99,6 +99,9 @@ The checker can prove only the command oracle you declare. It cannot infer that 
 - test an absence check against a known positive control
 - measure supplied figures instead of copying them into `EXPECT:`
 - review consequential manual outcomes with evidence proportional to risk
+- come from an author other than the implementer, written before the implementation exists
+- drive a rendered surface and assert what it computed, rather than searching the source for a string
+- record an abandonment a stranger could route to an owner, not a description of difficulty
 
 Use the advisory, non-executing `scripts/gate-lint.mjs` to catch mechanically weak ledger patterns; add `--strict` when warnings should fail. Full specification: [references/gates.md](references/gates.md).
 
@@ -143,6 +146,18 @@ For every independent READY set, open a native launch wave, record each host age
 
 `gate-check.mjs --scope <id>` reduces the scope's ledgers and dispatch waves together. It prints `ALL MET` only when every gate is met and every wave is complete; an abandoned wave remains a non-successful `HANDOFF REQUIRED` outcome.
 
+## Enforcement is asymmetric across hosts
+
+Structural stop enforcement is Claude Code only. Everything else in this repository is markdown and dependency-free Node: useful on any host, and ignorable by a degraded context that decides it is finished.
+
+Where the hook is unavailable, put the exit code in the loop rather than trusting the report. Make the checker the condition an outer runner, wrapper, or CI job tests:
+
+```text
+node <path-to-skill>/scripts/gate-check.mjs --scope <scope>
+```
+
+It exits `0` only on `ALL MET`, `1` on unmet gates, an incomplete wave, or `HANDOFF REQUIRED`. That exit code, not the agent's summary, is what should decide whether the work continues.
+
 ## Optional Claude Code Stop hook
 
 The hook scans the current session's resolved ledger and dispatch state and returns Claude Code's documented top-level `decision: "block"` response while gates remain unmet or launch waves remain incomplete. It does not execute checks. Its own session-keyed progress guard releases after six consecutive blocks without semantic gate/dispatch progress; metadata-only edits do not reset it. Abandonment stays visible as an explicit bounded handoff in pure, mixed-blocking, and final-release messages, without echoing free-form reasons.
@@ -170,7 +185,8 @@ The unreleased `2.1.0` source integrates the useful parts of community PRs while
 - rolling orchestration and opt-in `--jobs`, sequential by default
 - native dispatch launch waves with auditable partial-launch abandonment
 - revisioned PLAN contract inventories and final request reconciliation
-- advisory gate linting with opt-in strict failure
+- advisory gate linting with opt-in strict failure, including rendered outcomes proved only by a text search and abandonment reasons that cannot be routed to an owner
+- authorship separation, rendered-outcome, model-routing, and run-cost guidance in the references
 - non-successful gate abandonment that cannot promote parent completion
 - definition-bound automatic evidence shared by checker/status/Stop, with fail-closed legacy migration and manual-gate compatibility
 - strict Windows file identity through comparable descriptor stats, including pinned Node 22.14.0/libuv 1.49.2 CI coverage
