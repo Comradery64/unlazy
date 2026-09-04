@@ -63,6 +63,15 @@ invisible while it accumulates:
 - Remember that spend is not evidence. A long, expensive run with unmet gates is
   an unfinished run, and a cheap run with met gates is finished.
 
+Keep verification off a metered meter. A host's native subagents run under
+whatever plan already pays for the session, but two habits quietly move work
+onto per-token billing: spawning separate CLI processes instead of native
+subagents, and a `CHECK:` that calls a hosted model. Checks inherit the
+checker's environment and credentials, and a runnable gate re-executes on every
+parent verification, so one model-calling gate becomes a recurring charge that
+no ledger records. Verify with deterministic local commands wherever the outcome
+allows it.
+
 ## Avoid false economy
 
 Do not save time by skipping approval, negative controls, parent re-verification, or integration gates. Those checks exist because a fast false completion costs more than a direct failure.

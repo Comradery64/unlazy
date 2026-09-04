@@ -19,6 +19,7 @@ This section describes the current source tree. It does not claim that `2.1.0` h
 - State plainly that structural stop enforcement is Claude Code only and that everything else is markdown plus dependency-free Node. On other hosts, make `gate-check.mjs --scope <scope>` the exit-code condition an outer runner, wrapper, or CI job tests, so the checker rather than the agent's summary decides whether work continues.
 - Name the two documented per-agent model controls (a Claude Code subagent `model` field and Codex subagent model configuration) as the only sanctioned way to act on a leaf `Tier`, require the mapping to be recorded in `PLAN.md`, and keep routing from ever changing a gate, a re-verification, or an integration standard.
 - Add run-cost discipline: cap wave width at what the driver can verify on return, keep leaf transcripts out of the driver's context, start each scope fresh, and treat spend as cost rather than evidence.
+- Keep verification off a metered meter. Native subagents run under the plan that already pays for the session, but a separate CLI process farm authenticates on its own and a `CHECK:` that calls a hosted model bills per run on the credential the checker inherits, recurring on every parent `--reverify` and every `--jobs` slot. Prefer deterministic local oracles and keep an unavoidable model judgment manual.
 
 ### Correctness and fail-closed behavior
 
