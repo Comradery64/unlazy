@@ -165,6 +165,82 @@ test("lint: a deliberate slash wrapped pattern is not warned", () => {
   assert.doesNotMatch(lint(SOUND).out, /looks like a literal path/);
 });
 
+// A rendered outcome judged by a text search, plus the two abandonment shapes:
+// one external blocker a stranger could route, one description of difficulty.
+const SURFACE = write("surface.md", `# Gates: surface ledger
+
+Scope: the landing page and its unfinished payment path
+
+- [ ] G1: landing page renders the hero without placeholder copy
+  CHECK: grep -r "lorem ipsum" src/pages
+  EXPECT: no placeholder copy found
+  EVIDENCE: pending
+
+- [ ] G2: the pricing table layout holds at 375px
+  CHECK: node scripts/check.mjs pricing --widths 375
+  EXPECT: no overflow at 375px
+  EVIDENCE: pending
+
+- [ ] G3: checkout captures a live payment
+  EVIDENCE: pending
+
+- [ ] G4: refunds reconcile against the ledger
+  EVIDENCE: pending
+
+ABANDON: G3 no real payment account yet; blocked on finance issuing test credentials
+ABANDON: G4 too complex
+`);
+
+test("lint: a rendered outcome proved by a text search is warned", () => {
+  const { out, code } = lint(SURFACE);
+  assert.match(out, /G1:.*only searches text/);
+  assert.match(out, /rendered-outcome-text-oracle/);
+  assert.equal(code, 0);
+});
+
+test("lint: a rendered outcome driven by a real oracle is not warned", () => {
+  assert.doesNotMatch(lint(SURFACE).out, /G2:.*only searches text/);
+});
+
+test("lint: a text search chained to a real verifier is not a text-only oracle", () => {
+  const chained = write("chained-surface.md", `# Gates: chained surface
+
+- [ ] G1: the dashboard layout renders
+  CHECK: grep -q hero src/page.tsx && node scripts/check.mjs dashboard --layout
+  EXPECT: layout verification passed
+  EVIDENCE: pending
+`);
+  assert.doesNotMatch(lint(chained).out, /rendered-outcome-text-oracle/);
+});
+
+test("lint: an abandonment naming an external blocker is not warned", () => {
+  const { out } = lint(SURFACE);
+  assert.doesNotMatch(out, /G3:.*abandonment/);
+});
+
+test("lint: an abandonment describing difficulty is warned", () => {
+  const { out } = lint(SURFACE);
+  assert.match(out, /G4:.*describes difficulty rather than an external blocker/);
+  assert.match(out, /G4:.*too short to hand off/);
+});
+
+test("lint: a ledger that mostly gives up is flagged for escalation", () => {
+  assert.match(lint(SURFACE).out, /2\/4 gates are abandoned; escalate/);
+});
+
+test("lint: a single routable abandonment does not trigger escalation", () => {
+  const one = write("one-abandonment.md", SOUND_BODY + `
+ABANDON: G5 staging console is unreachable; blocked on ops restoring the log stream
+`);
+  const { out, code } = lint(one);
+  assert.doesNotMatch(out, /abandonment-heavy|effort-abandonment|unroutable-abandonment/);
+  assert.equal(code, 0);
+});
+
+test("lint: strict mode fails a ledger whose abandonment cannot be routed", () => {
+  assert.equal(lint("--strict", SURFACE).code, 1);
+});
+
 test("lint: shipped leaf and node templates satisfy the documented size policy", () => {
   for (const name of ["gates-leaf.md", "gates-node.md"]) {
     const result = lint(join(HERE, "..", "templates", name));
