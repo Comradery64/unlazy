@@ -26,8 +26,9 @@ import { parseGates, readStableRegularFile } from "./lib/gates.mjs";
 const HELP = `usage: gate-lint.mjs [--strict] [--json] <ledger.md ...>
 
 Audit gate quality, not gate completion. Report lexical signs of fixed-output
-oracles, weak expectations, manual measurements, and titles that name an
-activity instead of an outcome. Never executes a CHECK.
+oracles, weak expectations, manual measurements, titles that name an activity
+instead of an outcome, rendered outcomes judged by a text search, and
+abandonment reasons that cannot be handed off. Never executes a CHECK.
 
 exit codes: 0 no strict failures, 1 strict findings, 2 usage or parse error.`;
 
@@ -117,6 +118,18 @@ const WEAK_EXPECT = new Set([
 ]);
 // Openings that name an activity rather than an outcome a stranger could judge.
 const ACTIVITY_START = /^(work(ing)? on|improve|enhance|handle|support|ensure|make sure|try|attempt|look (at|into)|investigate|consider|review|refactor|clean ?up|polish|update|tidy|address|deal with|add support)\b/i;
+// Outcomes that live in a rendered surface rather than in a file's bytes.
+const RENDERED_OUTCOME = /\b(renders?|rendered|rendering|layout|responsive|viewport|breakpoints?|css|styling|styled|visual|visually|appearance|screenshot|pixels?|animation|hover|overlaps?|overlapping|dark mode|above the fold|contrast)\b/i;
+// A whole command that only searches text or asks whether a path exists.
+const TEXT_SEARCH_ONLY = /^\s*(?:grep|egrep|fgrep|rg|ag|ack|findstr|select-string|ls|test\s+-[ef])\b[^|&;]*$/i;
+// Abandonment is the one documented way out of an unmet gate, which also makes
+// it the cheapest place to hide a skipped requirement. The parser already
+// rejects a blank reason; these signals ask whether the recorded reason could
+// be routed to an owner by someone who was not in the session.
+const EFFORT_ABANDONMENT = /\b(too (?:hard|complex|complicated|difficult|big|slow|long)|not worth (?:it|the)|no time|ran out of time|out of scope for now|could ?n[o']t (?:figure|get|work|make)|did ?n[o']t work|gave up|giving up)\b/i;
+const MIN_ABANDON_REASON_CHARS = 24;
+const ABANDONMENT_SHARE_WARN = 1 / 3;
+const MIN_ABANDONMENTS_WARN = 2;
 const findings = [];
 let errorCount = 0;
 let warningCount = 0;
@@ -193,6 +206,33 @@ for (const file of files) {
       add(file, "warn", id, "activity-not-outcome",
         'names an activity, not an outcome a stranger could judge: "' + title + '"');
     }
+
+    if (check && RENDERED_OUTCOME.test(title) && TEXT_SEARCH_ONLY.test(check)) {
+      add(file, "warn", id, "rendered-outcome-text-oracle",
+        'title names a rendered outcome but CHECK only searches text: "' + check +
+        '"; a string match cannot observe layout, so drive the surface and assert what it computed');
+    }
+  }
+
+  for (const [id, reason] of doc.abandoned) {
+    if (EFFORT_ABANDONMENT.test(reason)) {
+      add(file, "warn", id, "effort-abandonment",
+        'abandonment reason describes difficulty rather than an external blocker: "' + reason +
+        '"; name what is missing and what would unblock it');
+    }
+    if (reason.trim().length < MIN_ABANDON_REASON_CHARS) {
+      add(file, "warn", id, "unroutable-abandonment",
+        'abandonment reason is too short to hand off: "' + reason +
+        '"; state what was attempted, what blocked it, and who decides next');
+    }
+  }
+
+  const abandonedCount = doc.abandoned.size;
+  if (abandonedCount >= MIN_ABANDONMENTS_WARN && doc.gates.length &&
+      abandonedCount / doc.gates.length >= ABANDONMENT_SHARE_WARN) {
+    add(file, "warn", null, "abandonment-heavy",
+      abandonedCount + "/" + doc.gates.length +
+      " gates are abandoned; escalate this ledger to its owner instead of settling it");
   }
 
   if (live.length && runnable.length / live.length < 0.5) {
