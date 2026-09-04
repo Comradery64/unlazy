@@ -112,7 +112,7 @@ node scripts/gate-lint.mjs GATES.md
 node scripts/gate-lint.mjs --strict --json .unlazy/<scope>/gates/leaf-1.1.1.md
 ```
 
-Warnings are deliberately advisory lexical signals: a whole command that looks like a fixed-output emitter, an expectation drawn from vocabulary that failure output also uses, a slash-wrapped path-shaped regular expression, a title that names an activity rather than an outcome, a number that nothing measures, or a mostly manual ledger. The linter does not shell-parse commands, and neither a command prefix nor EXPECT text appearing in argv proves that an oracle cannot fail.
+Warnings are deliberately advisory lexical signals: a whole command that looks like a fixed-output emitter, an expectation drawn from vocabulary that failure output also uses, a slash-wrapped path-shaped regular expression, a title that names an activity rather than an outcome, a number that nothing measures, a mostly manual ledger, a rendered outcome whose whole command is a text search or existence test, an abandonment reason that describes difficulty or is too short to route, and a ledger that abandons at least two gates and at least a third of them. The linter does not shell-parse commands, and neither a command prefix nor EXPECT text appearing in argv proves that an oracle cannot fail.
 
 Default warnings print details plus `LINT OK (<N> warning(s))` and exit `0`, so the self-gate below remains useful without making every advisory fatal. `--strict` prints `LINT FINDINGS`, exits `1`, and emits no `LINT OK` marker. Exit `2` is a usage or shared-parser failure. A lint finding is a prompt to sharpen the gate, not proof that the outcome is wrong.
 
@@ -125,9 +125,37 @@ Make a ledger require its own quality by linting as a gate:
   EVIDENCE: pending
 ```
 
+## Separate the gate author from the implementer
+
+The session that writes lazy code writes lazy tests. A ledger authored by the agent that will satisfy it is self-graded work with an extra file, and no check in this repository can detect a shallow oracle that passes honestly.
+
+Reduce that overlap where the outcome justifies the cost:
+
+- **Author the ledger before the implementation exists**, from the request, schema, or interface contract rather than from the finished artifact. A gate derived from code that already runs mostly asserts that the code still runs.
+- **Give a consequential ledger a reviewer who does not own the implementation.** In orchestrated mode that is the driver or a dedicated review leaf, and the reviewer reads every `CHECK:` and tries to defeat it. Record that reviewer in the PLAN inventory row so the separation stays visible after the session ends.
+- **Defeat each oracle once against a deliberately broken artifact.** A gate that has never failed is a gate nobody has tested. Keep that result as the gate's negative-control evidence.
+- **Treat an implementer's edit to an approved oracle as an amendment, not a fix.** Changing `CHECK:`, `EXPECT:`, or `CWD:` changes the definition digest, so recorded automatic evidence goes stale and the runtime approval is invalidated. That mechanism reports the change; only a reviewer decides whether the new oracle still measures the original outcome.
+- **Do not derive `EXPECT:` from an observed run.** Pasting whatever the command happened to print promotes current behavior to specification.
+
+Separation is a review discipline, not an enforced boundary. Unlazy records what a plan says about authorship and review; it cannot verify that two independent contexts did the work.
+
+## Outcomes no string can observe
+
+Exit codes settle back-end outcomes well. A rendered interface, a generated image, and a model's own output are where a passing oracle most often means nothing: a page whose source contains no placeholder copy can still overlap its navigation, collapse its mobile layout, and render an empty column.
+
+- **Do not prove a rendered outcome with a text search.** Absent placeholder text, a present class name, and an existing file are properties of the source, not of the rendered result. `gate-lint` warns when a title names a rendered outcome and the whole `CHECK:` is a search or existence test.
+- **Drive the surface and assert what it computed.** A headless browser owned by the project under test can assert facts that fail honestly: no horizontal overflow at each declared width, a named element inside the viewport, no overlapping bounding boxes between two selectors, no console error during load, an interactive state reached within a bound. Print one success-only marker after every assertion passes. Unlazy adds no browser dependency; the project supplies it and declares it as toolchain in `PLAN.md`.
+- **Prefer computed facts to pixels.** A screenshot digest changes with a font, a driver version, or an antialiasing setting, so it fails for the wrong reason and then gets disabled. Where visual regression is genuinely required, compare against a committed baseline with a declared tolerance and record which baseline the gate used.
+- **Keep a model judgment manual unless it is thresholded.** A vision model asked whether a page looks right is a reviewer, not an oracle. Cite the exact screenshot as manual evidence. Make it runnable only when the script fixes the artifact, the prompt, and a numeric threshold, exits nonzero below it, and prints a success-only marker, and note that its result still varies across runs and model versions.
+- **Run the negative control here first.** A browser check that silently fails to navigate reports zero errors and zero overlaps. Point it at a deliberately broken page and confirm that it fails before trusting a pass.
+
 ## Abandonment
 
-Use abandonment only when a required outcome is genuinely impossible within the authorized task. Keep the original gate, add one non-empty reason, and name the abandonment in the final report. An abandonment is a terminal visible handoff, not a passing check: `gate-check` prints `HANDOFF REQUIRED` and exits `1` even when every non-abandoned gate is met. The Stop hook allows the session to end but emits a bounded handoff message containing qualified ids, not free-form reasons. Never promote an abandoned child through a parent `ALL MET` oracle or describe the task as fully complete.
+Use abandonment only when a required outcome is genuinely impossible within the authorized task. Keep the original gate, add one non-empty reason, and name the abandonment in the final report.
+
+Write the reason for whoever inherits it: what was attempted, what external thing is missing, and what would unblock it. "No sandbox credentials for the payment provider yet" can be routed to an owner; "too complex" describes the session's difficulty and cannot. Abandonment is the one documented exit from an unmet gate, which also makes it the cheapest place to hide a dropped requirement, so `gate-lint` warns on difficulty vocabulary, on a reason too short to route, and on a ledger that abandons at least two gates and at least a third of them.
+
+Treat an abandonment as an escalation. A returned leaf carrying one is never `VERIFIED`: the driver marks it `ABANDONED` in the dispatch table, sets each affected PLAN inventory row to `ABANDONED` or `OWNER_DECISION`, and puts the outcome in front of the owner instead of absorbing it. Never resolve an abandonment by weakening the gate, deleting it, or narrowing its title until it passes. That converts a visible handoff back into the silent scope reduction the ledger exists to catch. An abandonment is a terminal visible handoff, not a passing check: `gate-check` prints `HANDOFF REQUIRED` and exits `1` even when every non-abandoned gate is met. The Stop hook allows the session to end but emits a bounded handoff message containing qualified ids, not free-form reasons. Never promote an abandoned child through a parent `ALL MET` oracle or describe the task as fully complete.
 
 ## Leaf gates versus branch gates
 

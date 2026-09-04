@@ -349,6 +349,67 @@ check("abandonment is terminal handoff rather than ALL MET", () => {
   return null;
 });
 
+check("gate authorship is separated from implementation wherever gates are written", () => {
+  const missing = [];
+  const required = [
+    ["SKILL.md", "A leaf that authors its own gates is self-graded"],
+    ["references/gates.md", "## Separate the gate author from the implementer"],
+    ["references/orchestration.md", "a leaf should not write the gates it will be judged by"],
+    ["templates/PLAN.md", "Gate review:"],
+    ["templates/gates-leaf.md", "who does not own the implementation"],
+  ];
+  for (const [path, token] of required) if (!read(path).includes(token)) missing.push(path);
+  return missing.length ? "authorship separation missing from: " + missing.join(", ") : null;
+});
+
+check("a rendered outcome is not certified by a text search", () => {
+  const lint = read("scripts/gate-lint.mjs");
+  if (!lint.includes("rendered-outcome-text-oracle")) return "gate-lint has no rendered-outcome rule";
+  if (!lint.includes("RENDERED_OUTCOME") || !lint.includes("TEXT_SEARCH_ONLY")) {
+    return "the rendered-outcome rule does not pair a title signal with a whole-command signal";
+  }
+  const missing = [];
+  for (const [path, token] of [
+    ["references/gates.md", "## Outcomes no string can observe"],
+    ["SKILL.md", "Do not prove a rendered outcome with a text search"],
+    ["templates/gates-leaf.md", "For a rendered outcome, drive the surface"],
+  ]) if (!read(path).includes(token)) missing.push(path);
+  return missing.length ? "rendered-outcome guidance missing from: " + missing.join(", ") : null;
+});
+
+check("abandonment escalates instead of settling the work", () => {
+  const lint = read("scripts/gate-lint.mjs");
+  const rules = ["effort-abandonment", "unroutable-abandonment", "abandonment-heavy"];
+  const missingRules = rules.filter((rule) => !lint.includes(rule));
+  if (missingRules.length) return "gate-lint is missing abandonment rules: " + missingRules.join(", ");
+  const gates = read("references/gates.md");
+  if (!gates.includes("Treat an abandonment as an escalation")) {
+    return "references/gates.md does not treat abandonment as an escalation";
+  }
+  if (!gates.includes("Never resolve an abandonment by weakening the gate")) {
+    return "references/gates.md does not forbid weakening a gate to clear an abandonment";
+  }
+  if (!read("references/orchestration.md").includes("returns carrying an abandonment is never `VERIFIED`")) {
+    return "the driver loop can still mark an abandoned return VERIFIED";
+  }
+  return null;
+});
+
+check("hook-only enforcement is disclosed with a portable fallback", () => {
+  const skill = read("SKILL.md");
+  const readme = read("README.md");
+  if (!skill.includes("Structural stop enforcement is Claude Code only")) {
+    return "SKILL.md offers the hook without disclosing that enforcement is host-specific";
+  }
+  if (!readme.includes("Structural stop enforcement is Claude Code only")) {
+    return "README.md does not disclose the enforcement asymmetry";
+  }
+  for (const [path, text] of [["SKILL.md", skill], ["README.md", readme]]) {
+    if (!/exit code|exits `0`/.test(text)) return path + " states no exit-code fallback for hostless hosts";
+  }
+  return null;
+});
+
 let passed = 0;
 const failures = [];
 for (const c of checks) {

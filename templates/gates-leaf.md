@@ -37,6 +37,10 @@ Strict format:
   ledger is named explicitly from `.unlazy/`, pass an explicit repository
   `--root` and `--cwd` so repository-relative commands keep the same base.
 - Record exact manual evidence and review consequential manual gates by risk.
+- Write these gates from the contract before implementing, and have a reviewer
+  who does not own the implementation try to defeat each oracle.
+- For a rendered outcome, drive the surface and assert what it computed. A
+  search for absent placeholder text proves nothing about the rendered page.
 - OWNS paths must be repository-relative, complete, and disjoint from every
   concurrently dispatched leaf. Claims coordinate writers; they do not sandbox.
 
@@ -46,6 +50,9 @@ If a gate becomes genuinely impossible, keep the gate and add:
 ABANDON: G<n> <non-empty reason and handoff>
 ```
 
-Surface every abandonment as a non-successful handoff in the final report; an
-abandoned leaf is not complete. See references/gates.md.
+State what was attempted, what external thing is missing, and what would unblock
+it. Surface every abandonment as a non-successful handoff in the final report and
+escalate it to its owner; an abandoned leaf is not complete, and weakening the
+gate instead is the silent scope reduction this ledger exists to catch. See
+references/gates.md.
 -->

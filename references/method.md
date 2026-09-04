@@ -7,7 +7,7 @@ The original v1 method claimed that each binary split multiplied effort. A small
 ## Rules
 
 1. **Make layer 1 the requested task.** Split only at real domain, component, or verification boundaries. Binary splits are optional.
-2. **Make each leaf one coherent deliverable.** Give it exact ownership, dependencies, and acceptance gates. Merge tiny adjacent leaves; split a leaf that hides several independent outcomes.
+2. **Make each leaf one coherent deliverable.** Give it exact ownership, dependencies, and acceptance gates. Merge tiny adjacent leaves; split a leaf that hides several independent outcomes. As a sizing prompt rather than a measurement: if the whole leaf is a few minutes of focused work, it is a step inside another leaf and its own ledger is overhead; if one leaf carries outcomes that could be dropped independently of each other, it is really several.
 3. **Fix contracts before fan-out.** Reread the original request and current amendments. Inventory every independently omittable required outcome and acceptance-changing constraint in `PLAN.md`, then record interfaces, formats, shared assumptions, error conventions, naming, and ownership before a leaf starts.
 4. **Give branches integration gates.** Verify child ledgers again, then test interfaces, end-to-end behavior, and regressions across the joined work.
 5. **Use gates and passes as the effort control.** Finish implementation, expert reread, defect hunt, and low-cost polish. Stop only when every required gate has current evidence and another improvement pass finds nothing.
