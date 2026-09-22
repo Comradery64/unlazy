@@ -43,9 +43,11 @@ extra hour.
 
 1. Fresh empty directory outside this repository, and a fresh session.
 2. This repository installed as the `unlazy` skill, at a commit you record.
-3. `npx playwright install chromium`, so the visual trap has a real alternative
-   available. Without it, a manual gate is a legitimate choice and T1 proves
-   nothing.
+3. A headless browser driven by a command that exits nonzero when an assertion
+   fails, so the visual trap has a real alternative available. Without one, a
+   manual gate is a legitimate choice and T1 proves nothing. Confirm the exit
+   code yourself before the run: a driver that reports failures only in its
+   output, while still exiting `0`, cannot back a runnable gate.
 4. Fill in **Run metadata** in `predictions.md` and read the predictions.
 
 Native subagents only. No `claude -p`, no `codex exec`, and no `CHECK:` that
