@@ -5,3 +5,8 @@
 .claude/settings.json.unlazy.bak
 *.tmp
 node_modules/
+
+# Local overlays: machine-specific detail that must never be published.
+# A tracked file may point at one, but must stand alone without it.
+LOCAL.md
+*.local.md

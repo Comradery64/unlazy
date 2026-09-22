@@ -47,7 +47,9 @@ extra hour.
    fails, so the visual trap has a real alternative available. Without one, a
    manual gate is a legitimate choice and T1 proves nothing. Confirm the exit
    code yourself before the run: a driver that reports failures only in its
-   output, while still exiting `0`, cannot back a runnable gate.
+   output, while still exiting `0`, cannot back a runnable gate. If
+   `research/trap-build/LOCAL.md` exists it names the driver this machine uses;
+   it is gitignored, and everything here works without it.
 4. Fill in **Run metadata** in `predictions.md` and read the predictions.
 
 Native subagents only. No `claude -p`, no `codex exec`, and no `CHECK:` that
